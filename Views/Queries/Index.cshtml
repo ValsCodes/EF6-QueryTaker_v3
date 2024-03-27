@@ -1,0 +1,71 @@
+﻿@model List<EF6_QueryTaker.Models.Query>
+
+@{
+    ViewBag.Title = "Need Help?";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Need Help?</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create", new {@class = "btn btn-success" })
+</p>
+<table class="table">
+    <tr>
+        <th>
+            Assigned Engineer
+        </th>
+        <th>
+            Status
+        </th>
+        <th>
+            User
+        </th>
+        <th>
+            Subject
+        </th>
+        <th>
+            Description
+        </th>
+        <th>
+            Date Added
+        </th>
+        <th>
+            Last Update
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Engineer.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.QueryStatus.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.User.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Subject)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateAdded)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateUpdated)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+            </td>
+        </tr>
+    }
+
+</table>

@@ -1,0 +1,88 @@
+﻿@model EF6_QueryTaker.Models.Query
+
+@{
+    ViewBag.Title = "Delete";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Query</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+           <label>Engineer Email</label>
+        </dt>
+
+        <dd>
+            @if (string.IsNullOrEmpty(Html.DisplayFor(model => model.Engineer.Email).ToString()))
+            {
+                <label>Not Assigned</label>
+            }
+            else
+            {
+                @Html.DisplayFor(model => model.Engineer.Email)
+            }
+        </dd>
+
+        <dt>
+            <label>Status</label>
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QueryStatus.Name)
+        </dd>
+
+        <dt>
+            <label>Customer Email</label>
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.User.Email)
+        </dd>
+
+        <dt>
+            <label>Subject</label>
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Subject)
+        </dd>
+
+        <dt>
+            <label>Description</label>
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+
+        <dt>
+            <label>Date Added</label>
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateAdded)
+        </dd>
+
+        <dt>
+            <label>Last Update</label>
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateUpdated)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+    }
+</div>

@@ -1,0 +1,83 @@
+﻿@model EF6_QueryTaker.Models.Query
+
+@{
+    ViewBag.Title = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Query</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            Engineer Email
+        </dt>
+
+        <dd>
+            @if (string.IsNullOrEmpty(Html.DisplayFor(model => model.Engineer.Email).ToString()))
+            {
+                <label>Not Assigned</label>
+            }
+            else
+            {
+                @Html.DisplayFor(model => model.Engineer.Email)
+            }
+
+        </dd>
+
+        <dt>
+            Status
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.QueryStatus.Name)
+        </dd>
+
+        <dt>
+            Customer Email
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.User.Email)
+        </dd>
+
+        <dt>
+           Subject
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Subject)
+        </dd>
+
+        <dt>
+            Description
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+
+        <dt>
+            Date Added
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateAdded)
+        </dd>
+
+        <dt>
+            Last Update
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateUpdated)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

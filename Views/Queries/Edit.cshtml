@@ -1,0 +1,90 @@
+﻿@using EF6_QueryTaker.Models.Enums
+@model EF6_QueryTaker.Models.Query
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Edit</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Query</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.Id)
+
+        <div class="form-group">
+            <label>Subject</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Subject, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Subject, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @if (User.IsInRole(RolesEnum.Admin.GetString()) || User.IsInRole(RolesEnum.Engineer.GetString()))
+        {
+            <div class="form-group">
+                <label>Status</label>
+                <div class="col-md-10">
+                    @Html.DropDownList("StatusId", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.StatusId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+                <div class="form-group">
+                    <label>Customer</label>
+                    <div class="col-md-10">
+                        @if (User.IsInRole(RolesEnum.Engineer.GetString()))
+                        {
+                            @Html.DropDownList("UserId", null, htmlAttributes: new { @class = "form-control" , @disabled = "disabled"})
+                        }
+                        else
+                        {
+                            @Html.DropDownList("UserId", null, htmlAttributes: new { @class = "form-control" })
+                        }
+                        @Html.ValidationMessageFor(model => model.UserId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            if (User.IsInRole(RolesEnum.Admin.GetString()))
+            {
+                <div class="form-group">
+                    <label>Assigned Engineer</label>
+                    <div class="col-md-10">
+                        @Html.DropDownList("EngineerId", null, htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.EngineerId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Save" class="btn btn-default" />
+                </div>
+            </div>
+
+        }
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @*@Styles.Render("~/Content/css")*@
+    @Scripts.Render("~/bundles/jqueryval")
+}
