@@ -22,7 +22,7 @@ namespace EF6_QueryTaker.Controllers
         public QueriesController()
         {
             _dbContext = new ApplicationDbContext();
-            _userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+            _userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(_dbContext));
 
             Statuses = new ObservableCollection<CommonProxy<long>>(QueryStatuses);
             Statuses.Insert(0, new CommonProxy<long>(string.Empty));
@@ -38,6 +38,10 @@ namespace EF6_QueryTaker.Controllers
         public ObservableCollection<CommonProxy<string>> Engineers { get; set; }
         public ObservableCollection<CommonProxy<string>> Customers { get; set; }
         public ObservableCollection<CommonProxy<long>> Statuses { get; set; }
+        private bool IsInRoleEngineer => User.IsInRole(RolesEnum.Engineer.GetString());
+        private bool IsInRoleAdmin => User.IsInRole(RolesEnum.Admin.GetString());
+        private bool IsInRoleOperator => User.IsInRole(RolesEnum.Operator.GetString());
+        private bool IsInRoleUser => User.IsInRole(RolesEnum.User.GetString());
 
         private ApplicationUser CurrentUser
         {
@@ -80,11 +84,6 @@ namespace EF6_QueryTaker.Controllers
             }
         }
 
-        private bool IsInRoleEngineer => User.IsInRole(RolesEnum.Engineer.GetString());
-        private bool IsInRoleAdmin => User.IsInRole(RolesEnum.Admin.GetString());
-        private bool IsInRoleOperator => User.IsInRole(RolesEnum.Operator.GetString());
-        private bool IsInRoleUser => User.IsInRole(RolesEnum.User.GetString());
-
         #endregion
 
         // GET: Queries
@@ -118,7 +117,7 @@ namespace EF6_QueryTaker.Controllers
 
             if (IsInRoleUser)
             {
-                var queryable = queries.Where(x => x.UserId == CurrentUser.Id);
+                var queryable = queries.Where(x => x.CustomerId == CurrentUser.Id);
                 return View(queryable.ToList());
             }
 
@@ -146,15 +145,9 @@ namespace EF6_QueryTaker.Controllers
         {
             if (IsInRoleAdmin)
             {
-                ViewBag.EngineerId = new SelectList(Engineers, "Id", "Name");
-                ViewBag.StatusId = new SelectList(Statuses, "Id", "Name");
-                ViewBag.UserId = new SelectList(Customers, "Id", "Name");
-            }
-            else
-            {
-                ViewBag.EngineerId = new SelectList(Enumerable.Empty<SelectListItem>());
-                ViewBag.StatusId = new SelectList(Enumerable.Empty<SelectListItem>());
-                ViewBag.UserId = new SelectList(Enumerable.Empty<SelectListItem>());
+                ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
+                ViewBag.Statuses = new SelectList(Statuses, "Id", "Name");
+                ViewBag.Customers = new SelectList(Customers, "Id", "Name");
             }
 
             return View();
@@ -163,53 +156,30 @@ namespace EF6_QueryTaker.Controllers
         // POST: Queries/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,UserId,EngineerId")] Query query)
+        public ActionResult Create(Query query)
         {
+            if (query.Id != 0)
+            {
+                return HttpNotFound();
+            }
+
             if (ModelState.IsValid)
             {
                 if (IsInRoleAdmin)
                 {
-                    if (query.Id == 0)
-                    {
-                        query.DateAdded = DateTime.Now;
-                        query.StatusId = (long)StatusEnums.ToBeProcessed;
-                    }
-
-                    query.DateUpdated = DateTime.Now;
-                    _dbContext.Queries.Add(query);
-                }
-                else
-                {
-                    if (query.Id == 0)
-                    {
-                        query.DateAdded = DateTime.Now;
-                        query.UserId = CurrentUser.Id;
-                        query.EngineerId = null;
-                        query.StatusId = (long)StatusEnums.ToBeProcessed;
-                    }
-
-                    query.DateUpdated = DateTime.Now;
-                    _dbContext.Queries.Add(query);
+                    query.CustomerId = CurrentUser.Id;
+                    query.EngineerId = null;
+                    query.StatusId = (long)StatusEnums.ToBeProcessed;
                 }
 
+                query.DateAdded = DateTime.Now;
+                query.DateUpdated = DateTime.Now;
+
+                _dbContext.Queries.Add(query);
                 _dbContext.SaveChanges();
-                return RedirectToAction("Index");
             }
 
-            if (User.IsInRole(RolesEnum.Admin.GetString()))
-            {
-                ViewBag.EngineerId = new SelectList(Engineers, "Id", "Name");
-                ViewBag.StatusId = new SelectList(Statuses, "Id", "Name");
-                ViewBag.UserId = new SelectList(Customers, "Id", "Name");
-            }
-            else
-            {
-                ViewBag.EngineerId = new SelectList(Enumerable.Empty<SelectListItem>());
-                ViewBag.StatusId = new SelectList(Enumerable.Empty<SelectListItem>());
-                ViewBag.UserId = new SelectList(Enumerable.Empty<SelectListItem>());
-            }
-
-            return View(query);
+            return RedirectToAction("Index");
         }
 
         // GET: Queries/Edit/5
@@ -229,23 +199,23 @@ namespace EF6_QueryTaker.Controllers
 
             if (IsInRoleAdmin || IsInRoleEngineer)
             {
-                ViewBag.StatusId = new SelectList(Statuses, "Id", "Name");
-                ViewBag.UserId = new SelectList(Customers, "Id", "Name");
+                ViewBag.Statuses = new SelectList(Statuses, "Id", "Name", query.StatusId);
+                ViewBag.Customers = new SelectList(Customers, "Id", "Name", query.CustomerId);
 
                 if (!IsInRoleAdmin)
                 {
                     return View(query);
                 }
 
-                ViewBag.EngineerId = new SelectList(Engineers, "Id", "Name");
+                ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
 
             }
-            else
+/*            else
             {
                 ViewBag.EngineerId = new SelectList(Enumerable.Empty<SelectListItem>());
                 ViewBag.StatusId = new SelectList(Enumerable.Empty<SelectListItem>());
                 ViewBag.UserId = new SelectList(Enumerable.Empty<SelectListItem>());
-            }
+            }*/
 
             return View(query);
         }
@@ -253,7 +223,7 @@ namespace EF6_QueryTaker.Controllers
         // POST: Queries/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,UserId,EngineerId")] Query query)
+        public ActionResult Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,CustomerId,EngineerId")] Query query)
         {
             var updatedQuery = _dbContext.Queries.Find(query.Id);
 
@@ -262,47 +232,26 @@ namespace EF6_QueryTaker.Controllers
                 return HttpNotFound();
             }
 
-            if (IsInRoleUser)
-            {
-                updatedQuery.DateUpdated = DateTime.Now;
-                updatedQuery.Subject = query.Subject;
-                updatedQuery.Description = query.Description;
-
-                _dbContext.Queries.AddOrUpdate(updatedQuery);
-                _dbContext.SaveChanges();
-
-                return RedirectToAction("Index");
-            }
-
             if (IsInRoleEngineer)
             {
-                updatedQuery.DateUpdated = DateTime.Now;
-                updatedQuery.Subject = query.Subject;
-                updatedQuery.Description = query.Description;
                 updatedQuery.StatusId = query.StatusId;
-
-                _dbContext.Queries.AddOrUpdate(updatedQuery);
-                _dbContext.SaveChanges();
-
-                return RedirectToAction("Index");
             }
 
             if (IsInRoleAdmin)
             {
-                updatedQuery.DateUpdated = DateTime.Now;
-                updatedQuery.Subject = query.Subject;
-                updatedQuery.Description = query.Description;
                 updatedQuery.StatusId = query.StatusId;
                 updatedQuery.EngineerId = query.EngineerId;
-                updatedQuery.UserId = query.UserId;
-
-                _dbContext.Queries.AddOrUpdate(updatedQuery);
-                _dbContext.SaveChanges();
-
-                return RedirectToAction("Index");
+                updatedQuery.CustomerId = query.CustomerId;             
             }
 
-            return HttpNotFound();
+            updatedQuery.Description = query.Description;
+            updatedQuery.Subject = query.Subject;
+            updatedQuery.DateUpdated = DateTime.Now;
+
+            _dbContext.Queries.AddOrUpdate(updatedQuery);
+            _dbContext.SaveChanges();
+
+            return RedirectToAction("Index");
         }
 
         // GET: Queries/Delete/5
@@ -337,6 +286,7 @@ namespace EF6_QueryTaker.Controllers
 
             _dbContext.Queries.Remove(query);
             _dbContext.SaveChanges();
+
             return RedirectToAction("Index");
         }
 
@@ -345,6 +295,11 @@ namespace EF6_QueryTaker.Controllers
             if (disposing)
             {
                 _dbContext.Dispose();
+                _userManager.Dispose();
+
+                Engineers.Clear();
+                Statuses.Clear();
+                Customers.Clear();
             }
             base.Dispose(disposing);
         }

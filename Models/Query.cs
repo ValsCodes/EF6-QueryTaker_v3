@@ -30,9 +30,9 @@ namespace EF6_QueryTaker.Models
         public virtual QueryStatus QueryStatus { get; set; }
 
         [Column("user_id")]
-        [ForeignKey(nameof(User))]
-        public virtual string UserId { get; set; }
-        public virtual ApplicationUser User { get; set; }
+        [ForeignKey(nameof(Customer))]
+        public virtual string CustomerId { get; set; }
+        public virtual ApplicationUser Customer { get; set; }
 
         [Column("engineer_id")]
         [ForeignKey(nameof(Engineer))]

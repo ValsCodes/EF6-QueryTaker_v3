@@ -36,9 +36,9 @@
         @if (User.IsInRole(RolesEnum.Admin.GetString()) || User.IsInRole(RolesEnum.Engineer.GetString()))
         {
             <div class="form-group">
-                @Html.LabelFor(model => model.StatusId, "StatusId", htmlAttributes: new { @class = "control-label col-md-2" })
+                @Html.LabelFor(model => model.StatusId, "Status", htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.DropDownList("StatusId", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.DropDownList("Statuses", null, htmlAttributes: new { @class = "form-control" })
                     @Html.ValidationMessageFor(model => model.StatusId, "", new { @class = "text-danger" })
                 </div>
             </div>
@@ -46,18 +46,18 @@
             if (User.IsInRole(RolesEnum.Admin.GetString()))
             {
                 <div class="form-group">
-                    @Html.LabelFor(model => model.User.UserName, "User", htmlAttributes: new { @class = "control-label col-md-2" })
+                    @Html.LabelFor(model => model.Customer.UserName, "Customer", htmlAttributes: new { @class = "control-label col-md-2" })
                     <div class="col-md-10">
-                        @Html.DropDownList("UserId", null, htmlAttributes: new { @class = "form-control" })
-                        @Html.ValidationMessageFor(model => model.UserId, "", new { @class = "text-danger" })
+                        @Html.DropDownList("Customers", null, htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.CustomerId, "", new { @class = "text-danger" })
                     </div>
                 </div>
             }
 
             <div class="form-group">
-                @Html.LabelFor(model => model.EngineerId, "EngineerId", htmlAttributes: new { @class = "control-label col-md-2" })
+                @Html.LabelFor(model => model.EngineerId, "Engineer", htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.DropDownList("EngineerId", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.DropDownList("Engineers", null, htmlAttributes: new { @class = "form-control" })
                     @Html.ValidationMessageFor(model => model.EngineerId, "", new { @class = "text-danger" })
                 </div>
             </div>
