@@ -5,6 +5,7 @@ using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+using EF6_QueryTaker.Common;
 using EF6_QueryTaker.Models;
 using EF6_QueryTaker.Models.Common;
 using EF6_QueryTaker.Models.Enums;
@@ -19,19 +20,17 @@ namespace EF6_QueryTaker.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
 
+
+        //On Initialize, slow load 
+        //Consider filling collections async Task<>
         public QueriesController()
         {
             _dbContext = new ApplicationDbContext();
             _userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(_dbContext));
 
-            Statuses = new ObservableCollection<CommonProxy<long>>(QueryStatuses);
-            Statuses.Insert(0, new CommonProxy<long>(string.Empty));
+            Statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
 
-            Customers = new ObservableCollection<CommonProxy<string>>(UsersList.Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id }));
-            Customers.Insert(0, new CommonProxy<string>(string.Empty));
-
-            Engineers = new ObservableCollection<CommonProxy<string>>(EngineersList.Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id }));
-            Engineers.Insert(0, new CommonProxy<string>(string.Empty));
+            FillUserCollections();
         }
 
         #region Properties
@@ -51,7 +50,7 @@ namespace EF6_QueryTaker.Controllers
                 return result;
             }
         }
-
+ 
         private IEnumerable<ApplicationUser> UsersList
         {
             get
@@ -83,7 +82,44 @@ namespace EF6_QueryTaker.Controllers
                 return statuses;
             }
         }
+        #endregion
 
+        #region Private Methods
+        private void FillUserCollections()
+        {
+            var users = _userManager.Users;
+
+            var engineerRoleId = RolesEnum.Engineer.GetEnum().ToString();
+            var customerRoleId = RolesEnum.User.GetEnum().ToString();
+
+            var engineers = users.Where(x => x.Roles.Any(r => r.RoleId == engineerRoleId)).Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
+            var customers = users.Where(x => x.Roles.Any(r => r.RoleId == customerRoleId)).Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
+
+            if(Customers == null)
+            {
+                Customers = new ObservableCollection<CommonProxy<string>>();
+            }
+            else
+            {
+                Customers.Clear();
+            }
+
+            if (Engineers == null)
+            {
+                Engineers = new ObservableCollection<CommonProxy<string>>();
+            }
+            else
+            {
+                Engineers.Clear();
+            }
+            
+            Customers = new ObservableCollection<CommonProxy<string>>(customers);
+            Customers.Insert(0, new CommonProxy<string>(string.Empty));
+
+            Engineers.Clear();
+            Engineers = new ObservableCollection<CommonProxy<string>>(engineers);
+            Engineers.Insert(0, new CommonProxy<string>(string.Empty));
+        }
         #endregion
 
         // GET: Queries
@@ -210,45 +246,54 @@ namespace EF6_QueryTaker.Controllers
                 ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
 
             }
-/*            else
-            {
-                ViewBag.EngineerId = new SelectList(Enumerable.Empty<SelectListItem>());
-                ViewBag.StatusId = new SelectList(Enumerable.Empty<SelectListItem>());
-                ViewBag.UserId = new SelectList(Enumerable.Empty<SelectListItem>());
-            }*/
+            /*            else
+                        {
+                            ViewBag.EngineerId = new SelectList(Enumerable.Empty<SelectListItem>());
+                            ViewBag.StatusId = new SelectList(Enumerable.Empty<SelectListItem>());
+                            ViewBag.UserId = new SelectList(Enumerable.Empty<SelectListItem>());
+                        }*/
 
             return View(query);
         }
 
         // POST: Queries/Edit/5
+        /// <summary>
+        /// query doesn't return selected values from dropdowns, UI problem probably
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,CustomerId,EngineerId")] Query query)
         {
-            var updatedQuery = _dbContext.Queries.Find(query.Id);
+            var temp = _dbContext.Queries.Find(query.Id);
 
-            if (updatedQuery == null)
+            if (temp == null)
             {
                 return HttpNotFound();
             }
 
             if (IsInRoleEngineer)
             {
-                updatedQuery.StatusId = query.StatusId;
+                temp.StatusId = query.StatusId;
             }
 
             if (IsInRoleAdmin)
             {
-                updatedQuery.StatusId = query.StatusId;
-                updatedQuery.EngineerId = query.EngineerId;
-                updatedQuery.CustomerId = query.CustomerId;             
+                temp.StatusId = query.StatusId;
+                temp.EngineerId = query.EngineerId;
+
+                if (query.CustomerId != null)
+                {
+                    temp.CustomerId = query.CustomerId;
+                }
             }
 
-            updatedQuery.Description = query.Description;
-            updatedQuery.Subject = query.Subject;
-            updatedQuery.DateUpdated = DateTime.Now;
+            temp.Description = query.Description;
+            temp.Subject = query.Subject;
+            temp.DateUpdated = DateTime.Now;
 
-            _dbContext.Queries.AddOrUpdate(updatedQuery);
+            _dbContext.Queries.AddOrUpdate(temp);
             _dbContext.SaveChanges();
 
             return RedirectToAction("Index");
