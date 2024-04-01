@@ -5,21 +5,21 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Need Help?</h2>
+<h2>Open Tickets</h2>
 
 <p>
     @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
 </p>
 <table class="table">
     <tr>
-        <th>
+        <th style="width: 175px;">
             Assigned Engineer
         </th>
         <th>
             Status
         </th>
         <th>
-            User
+            Customer
         </th>
         <th>
             Subject
@@ -27,10 +27,10 @@
         <th>
             Description
         </th>
-        <th>
+        <th style="width: 175px;">
             Date Added
         </th>
-        <th>
+        <th style="width: 175px;">
             Last Update
         </th>
         <th></th>
@@ -55,10 +55,10 @@
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.DateAdded)
+                @Html.DisplayFor(modelItem => item.DateAdded.Date)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.DateUpdated)
+                @Html.DisplayFor(modelItem => item.DateUpdated.Date)
             </td>
             <td style="min-width:300px">
                 @Html.ActionLink("Edit", "Edit", new { id = item.Id }, new { @class = "btn btn-success" })

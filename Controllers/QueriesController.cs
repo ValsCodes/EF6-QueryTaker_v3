@@ -23,6 +23,7 @@ namespace EF6_QueryTaker.Controllers
 
         //On Initialize, slow load 
         //Consider filling collections async Task<>
+        //Consider removing Initializer
         public QueriesController()
         {
             _dbContext = new ApplicationDbContext();
