@@ -20,8 +20,7 @@ namespace EF6_QueryTaker.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
 
-
-        //On Initialize, slow load 
+        //On Initialize, slow load
         //Consider filling collections async Task<>
         //Consider removing Initializer
         public QueriesController()
@@ -29,15 +28,12 @@ namespace EF6_QueryTaker.Controllers
             _dbContext = new ApplicationDbContext();
             _userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(_dbContext));
 
-            Statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
-
             FillUserCollections();
         }
 
         #region Properties
         public ObservableCollection<CommonProxy<string>> Engineers { get; set; }
         public ObservableCollection<CommonProxy<string>> Customers { get; set; }
-        public ObservableCollection<CommonProxy<long>> Statuses { get; set; }
         private bool IsInRoleEngineer => User.IsInRole(RolesEnum.Engineer.GetString());
         private bool IsInRoleAdmin => User.IsInRole(RolesEnum.Admin.GetString());
         private bool IsInRoleOperator => User.IsInRole(RolesEnum.Operator.GetString());
@@ -69,18 +65,6 @@ namespace EF6_QueryTaker.Controllers
                 var role = RolesEnum.Engineer.GetEnum().ToString();
                 var users = _userManager.Users.Where(x => x.Roles.Any(r => r.RoleId == role));
                 return users;
-            }
-        }
-
-        private IEnumerable<CommonProxy<long>> QueryStatuses
-        {
-            get
-            {
-                var statuses = _dbContext.QueryStatus
-                    .Select(x => new { x.Name, x.Id })
-                    .AsEnumerable()
-                    .Select(x => new CommonProxy<long> { Name = x.Name, Id = x.Id });
-                return statuses;
             }
         }
         #endregion
@@ -182,8 +166,9 @@ namespace EF6_QueryTaker.Controllers
         {
             if (IsInRoleAdmin)
             {
+                var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
                 ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
-                ViewBag.Statuses = new SelectList(Statuses, "Id", "Name");
+                ViewBag.Statuses = new SelectList(statuses, "Id", "Name");
                 ViewBag.Customers = new SelectList(Customers, "Id", "Name");
             }
 
@@ -236,7 +221,8 @@ namespace EF6_QueryTaker.Controllers
 
             if (IsInRoleAdmin || IsInRoleEngineer)
             {
-                ViewBag.Statuses = new SelectList(Statuses, "Id", "Name", query.StatusId);
+                var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
+                ViewBag.Statuses = new SelectList(statuses, "Id", "Name", query.StatusId);
                 ViewBag.Customers = new SelectList(Customers, "Id", "Name", query.CustomerId);
 
                 if (!IsInRoleAdmin)
@@ -344,7 +330,6 @@ namespace EF6_QueryTaker.Controllers
                 _userManager.Dispose();
 
                 Engineers.Clear();
-                Statuses.Clear();
                 Customers.Clear();
             }
             base.Dispose(disposing);

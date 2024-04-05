@@ -213,6 +213,7 @@
     <Compile Include="Common\Enums\StatusEnums.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Proxies\UserProxy.cs" />
     <Compile Include="Models\Query.cs" />
     <Compile Include="Models\QueryStatus.cs" />
     <Compile Include="Models\ManyToMany\QueryComments.cs" />
