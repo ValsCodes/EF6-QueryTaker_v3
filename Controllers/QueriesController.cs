@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Entity;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Net;
@@ -29,9 +30,7 @@ namespace EF6_QueryTaker.Controllers
             if(_dbContext == null)
             {
                 _dbContext = new ApplicationDbContext();
-                _userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(_dbContext));
-
-                FillUserCollections();
+                _userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(_dbContext));             
             }
         }
 
@@ -74,15 +73,16 @@ namespace EF6_QueryTaker.Controllers
         #endregion
 
         #region Private Methods
-        private void FillUserCollections()
+        private async Task FillUserCollections()
         {
-            var users = _userManager.Users;
+            var users = await _userManager.Users.ToListAsync();
+
 
             var engineerRoleId = RolesEnum.Engineer.GetEnum().ToString();
             var customerRoleId = RolesEnum.User.GetEnum().ToString();
 
-            var engineers = users.Where(x => x.Roles.Any(r => r.RoleId == engineerRoleId)).Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
-            var customers = users.Where(x => x.Roles.Any(r => r.RoleId == customerRoleId)).Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
+            var engineers = users.Where(x => x.Roles.Any(r => r.RoleId == engineerRoleId)).AsEnumerable().Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
+            var customers = users.Where(x => x.Roles.Any(r => r.RoleId == customerRoleId)).AsEnumerable().Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
             
             Customers = new ObservableCollection<CommonProxy<string>>(customers);
             Customers.Insert(0, new CommonProxy<string>(string.Empty));
@@ -96,6 +96,11 @@ namespace EF6_QueryTaker.Controllers
         [Authorize]
         public async Task<ActionResult> Index()
         {
+            if (Customers == null || Engineers == null)
+            {
+                await FillUserCollections();
+            }
+
             if (CurrentUser == null)
             {
                 return HttpNotFound("User Not Logged In.");
@@ -108,23 +113,24 @@ namespace EF6_QueryTaker.Controllers
                 return HttpNotFound("Bad User");
             }
 
-            var queries = _dbContext.Queries;
+            var queries = await _dbContext.Queries.ToListAsync();
 
             if (IsInRoleAdmin || IsInRoleOperator)
             {
-                return View(queries.OrderBy(x => x.EngineerId).ToList());
+                var queryable = queries.OrderBy(x => x.EngineerId).ToList();
+                return View(queryable);
             }
 
             if (IsInRoleEngineer)
             {
-                var queryable = queries.Where(x => x.EngineerId == CurrentUser.Id);
-                return View(queryable.ToList());
+                var queryable = queries.Where(x => x.EngineerId == CurrentUser.Id).ToList();
+                return View(queryable);
             }
 
             if (IsInRoleUser)
             {
-                var queryable = queries.Where(x => x.CustomerId == CurrentUser.Id);
-                return View(queryable.ToList());
+                var queryable = queries.Where(x => x.CustomerId == CurrentUser.Id).ToList();
+                return View(queryable);
             }
 
             return HttpNotFound();
@@ -132,13 +138,13 @@ namespace EF6_QueryTaker.Controllers
 
         // GET: Queries/Details/5
 
-        public ActionResult Details(long? id)
+        public async Task<ActionResult> Details(long? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var query = _dbContext.Queries.Find(id);
+            var query = _dbContext.Queries.FindAsync(id);
             if (query == null)
             {
                 return HttpNotFound();
@@ -163,7 +169,7 @@ namespace EF6_QueryTaker.Controllers
         // POST: Queries/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Query query)
+        public async Task<ActionResult> Create(Query query)
         {
             if (query.Id != 0)
             {
@@ -183,21 +189,21 @@ namespace EF6_QueryTaker.Controllers
                 query.DateUpdated = DateTime.Now;
 
                 _dbContext.Queries.Add(query);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
             }
 
             return RedirectToAction("Index");
         }
 
         // GET: Queries/Edit/5
-        public ActionResult Edit(long? id)
+        public async Task<ActionResult> Edit(long? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            var query = _dbContext.Queries.Find(id);
+            var query = await _dbContext.Queries.FindAsync(id);
 
             if (query == null)
             {
@@ -216,14 +222,7 @@ namespace EF6_QueryTaker.Controllers
                 }
 
                 ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
-
             }
-            /*            else
-                        {
-                            ViewBag.EngineerId = new SelectList(Enumerable.Empty<SelectListItem>());
-                            ViewBag.StatusId = new SelectList(Enumerable.Empty<SelectListItem>());
-                            ViewBag.UserId = new SelectList(Enumerable.Empty<SelectListItem>());
-                        }*/
 
             return View(query);
         }
@@ -236,9 +235,9 @@ namespace EF6_QueryTaker.Controllers
         /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,CustomerId,EngineerId")] Query query)
+        public async Task<ActionResult> Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,CustomerId,EngineerId")] Query query)
         {
-            var temp = _dbContext.Queries.Find(query.Id);
+            var temp = await _dbContext.Queries.FindAsync(query.Id);
 
             if (temp == null)
             {
@@ -266,20 +265,20 @@ namespace EF6_QueryTaker.Controllers
             temp.DateUpdated = DateTime.Now;
 
             _dbContext.Queries.AddOrUpdate(temp);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
 
         // GET: Queries/Delete/5
-        public ActionResult Delete(long? id)
+        public async Task<ActionResult> Delete(long? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            var query = _dbContext.Queries.Find(id);
+            var query = await _dbContext.Queries.FindAsync(id);
 
             if (query == null)
             {
@@ -292,9 +291,9 @@ namespace EF6_QueryTaker.Controllers
         // POST: Queries/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(long id)
+        public async  Task<ActionResult> DeleteConfirmed(long id)
         {
-            var query = _dbContext.Queries.Find(id);
+            var query = await _dbContext.Queries.FindAsync(id);
 
             if (query == null)
             {
@@ -302,7 +301,7 @@ namespace EF6_QueryTaker.Controllers
             }
 
             _dbContext.Queries.Remove(query);
-            _dbContext.SaveChanges();
+           await _dbContext.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
@@ -318,16 +317,7 @@ namespace EF6_QueryTaker.Controllers
 
                     _userManager.Dispose();
                     _userManager = null;
-                }
-                
-                if(Engineers.Any() || Customers.Any()) 
-                {
-                    Engineers.Clear();
-                    Engineers = null;
-
-                    Customers.Clear();
-                    Customers = null;
-                }              
+                }                               
             }
             base.Dispose(disposing);
         }

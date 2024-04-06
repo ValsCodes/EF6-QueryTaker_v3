@@ -218,12 +218,12 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\CommentType.cs" />
-    <Compile Include="Common\CommonProxy.cs" />
+    <Compile Include="Common\Proxies\CommonProxy.cs" />
     <Compile Include="Common\Enums\RolesEnum.cs" />
     <Compile Include="Common\Enums\StatusEnums.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
-    <Compile Include="Models\Proxies\UserProxy.cs" />
+    <Compile Include="Common\Proxies\UserProxy.cs" />
     <Compile Include="Models\Query.cs" />
     <Compile Include="Models\QueryStatus.cs" />
     <Compile Include="Models\ManyToMany\QueryComments.cs" />

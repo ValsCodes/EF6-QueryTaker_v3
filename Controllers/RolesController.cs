@@ -8,6 +8,7 @@ using System.Data.Entity;
 using EF6_QueryTaker.Models.Proxies;
 using System.Net;
 using System.Threading.Tasks;
+using EF6_QueryTaker.Models.Common;
 
 namespace EF6_QueryTaker.Controllers
 {
@@ -27,10 +28,12 @@ namespace EF6_QueryTaker.Controllers
         }
 
         // GET: Roles
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
+            var roles = await _dbContext.Roles.ToListAsync();
+            var temp = roles.Select(x => new CommonProxy<string>() { Name = x.Name, Id = x.Id }).ToList();
 
-            return View();
+            return View(temp);
         }
 
         // GET: Create Roles
