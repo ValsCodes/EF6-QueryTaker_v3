@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using EF6_QueryTaker.Common;
 using EF6_QueryTaker.Models;
@@ -17,18 +18,21 @@ namespace EF6_QueryTaker.Controllers
 {
     public class QueriesController : Controller
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private ApplicationDbContext _dbContext;
+        private ApplicationUserManager _userManager;
 
         //On Initialize, slow load
         //Consider filling collections async Task<>
         //Consider removing Initializer
         public QueriesController()
         {
-            _dbContext = new ApplicationDbContext();
-            _userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(_dbContext));
+            if(_dbContext == null)
+            {
+                _dbContext = new ApplicationDbContext();
+                _userManager = new ApplicationUserManager(new UserStore<ApplicationUser>(_dbContext));
 
-            FillUserCollections();
+                FillUserCollections();
+            }
         }
 
         #region Properties
@@ -79,29 +83,10 @@ namespace EF6_QueryTaker.Controllers
 
             var engineers = users.Where(x => x.Roles.Any(r => r.RoleId == engineerRoleId)).Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
             var customers = users.Where(x => x.Roles.Any(r => r.RoleId == customerRoleId)).Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
-
-            if(Customers == null)
-            {
-                Customers = new ObservableCollection<CommonProxy<string>>();
-            }
-            else
-            {
-                Customers.Clear();
-            }
-
-            if (Engineers == null)
-            {
-                Engineers = new ObservableCollection<CommonProxy<string>>();
-            }
-            else
-            {
-                Engineers.Clear();
-            }
             
             Customers = new ObservableCollection<CommonProxy<string>>(customers);
             Customers.Insert(0, new CommonProxy<string>(string.Empty));
 
-            Engineers.Clear();
             Engineers = new ObservableCollection<CommonProxy<string>>(engineers);
             Engineers.Insert(0, new CommonProxy<string>(string.Empty));
         }
@@ -109,14 +94,14 @@ namespace EF6_QueryTaker.Controllers
 
         // GET: Queries
         [Authorize]
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
             if (CurrentUser == null)
             {
                 return HttpNotFound("User Not Logged In.");
             }
 
-            var roles = _userManager.GetRoles(CurrentUser.Id);
+            var roles = await _userManager.GetRolesAsync(CurrentUser.Id);
 
             if (!roles.Any())
             {
@@ -326,11 +311,23 @@ namespace EF6_QueryTaker.Controllers
         {
             if (disposing)
             {
-                _dbContext.Dispose();
-                _userManager.Dispose();
+                if(_dbContext != null)
+                {
+                    _dbContext.Dispose();
+                    _dbContext = null;
 
-                Engineers.Clear();
-                Customers.Clear();
+                    _userManager.Dispose();
+                    _userManager = null;
+                }
+                
+                if(Engineers.Any() || Customers.Any()) 
+                {
+                    Engineers.Clear();
+                    Engineers = null;
+
+                    Customers.Clear();
+                    Customers = null;
+                }              
             }
             base.Dispose(disposing);
         }

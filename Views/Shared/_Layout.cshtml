@@ -26,7 +26,7 @@
                         <li>@Html.ActionLink("Queries", "Index", "Queries", new { area = "" }, new { @class = "nav-link" })</li>
                         if (User.IsInRole(RolesEnum.Admin.GetString()))
                         {
-                            <li>@Html.ActionLink("Roles", "Index", "Roles", new { area = "" }, new { @class = "nav-link" })</li>
+                            <li>@Html.ActionLink("Users", "Index", "Users", new { area = "" }, new { @class = "nav-link" })</li>
                         }
                     }
                     <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>

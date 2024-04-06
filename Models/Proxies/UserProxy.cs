@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace EF6_QueryTaker.Models.Proxies
+﻿namespace EF6_QueryTaker.Models.Proxies
 {
     public class UserProxy
     {
