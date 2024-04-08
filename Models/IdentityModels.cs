@@ -33,6 +33,8 @@ namespace EF6_QueryTaker.Models
 
         public DbSet<Query> Queries { get; set; }
 
+        public DbSet<QueryCategory> QueryCategory { get; set; }
+
         public DbSet<QueryStatus> QueryStatus { get; set; }
 
         public DbSet<Comment> Comments { get; set; }

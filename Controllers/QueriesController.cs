@@ -77,7 +77,6 @@ namespace EF6_QueryTaker.Controllers
         {
             var users = await _userManager.Users.ToListAsync();
 
-
             var engineerRoleId = RolesEnum.Engineer.GetEnum().ToString();
             var customerRoleId = RolesEnum.User.GetEnum().ToString();
 
@@ -96,11 +95,6 @@ namespace EF6_QueryTaker.Controllers
         [Authorize]
         public async Task<ActionResult> Index()
         {
-            if (Customers == null || Engineers == null)
-            {
-                await FillUserCollections();
-            }
-
             if (CurrentUser == null)
             {
                 return HttpNotFound("User Not Logged In.");
@@ -113,12 +107,11 @@ namespace EF6_QueryTaker.Controllers
                 return HttpNotFound("Bad User");
             }
 
-            var queries = await _dbContext.Queries.ToListAsync();
+            var queries = await _dbContext.Queries.OrderBy(x => x.StatusId).ToListAsync();
 
             if (IsInRoleAdmin || IsInRoleOperator)
             {
-                var queryable = queries.OrderBy(x => x.EngineerId).ToList();
-                return View(queryable);
+                return View(queries);
             }
 
             if (IsInRoleEngineer)
@@ -136,6 +129,18 @@ namespace EF6_QueryTaker.Controllers
             return HttpNotFound();
         }
 
+/*        [HttpGet]
+        public async Task<ActionResult> Index(string searchString)
+        {
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var data = await _dbContext.Queries.Where(s => s.Subject.Contains(searchString)).OrderBy(x => x.StatusId).ToListAsync();
+                return View(data);
+            }
+
+            return View();
+        }*/
+
         // GET: Queries/Details/5
 
         public async Task<ActionResult> Details(long? id)
@@ -144,7 +149,7 @@ namespace EF6_QueryTaker.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var query = _dbContext.Queries.FindAsync(id);
+            var query = await _dbContext.Queries.FindAsync(id);
             if (query == null)
             {
                 return HttpNotFound();
@@ -153,10 +158,15 @@ namespace EF6_QueryTaker.Controllers
         }
 
         // GET: Queries/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             if (IsInRoleAdmin)
-            {
+            {  
+                if(Engineers == null || Customers == null)
+                {
+                    await FillUserCollections();
+                }
+
                 var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
                 ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
                 ViewBag.Statuses = new SelectList(statuses, "Id", "Name");
@@ -180,9 +190,9 @@ namespace EF6_QueryTaker.Controllers
             {
                 if (IsInRoleAdmin)
                 {
-                    query.CustomerId = CurrentUser.Id;
-                    query.EngineerId = null;
-                    query.StatusId = (long)StatusEnums.ToBeProcessed;
+                    query.CustomerId = query.CustomerId;
+                    query.EngineerId = query.EngineerId ?? null;
+                    query.StatusId = query.StatusId ?? (long)StatusEnums.ToBeProcessed; 
                 }
 
                 query.DateAdded = DateTime.Now;
@@ -212,6 +222,11 @@ namespace EF6_QueryTaker.Controllers
 
             if (IsInRoleAdmin || IsInRoleEngineer)
             {
+                if (Engineers == null || Customers == null)
+                {
+                    await FillUserCollections();
+                }
+
                 var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
                 ViewBag.Statuses = new SelectList(statuses, "Id", "Name", query.StatusId);
                 ViewBag.Customers = new SelectList(Customers, "Id", "Name", query.CustomerId);

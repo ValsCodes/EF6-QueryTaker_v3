@@ -10,6 +10,13 @@
 <p>
     @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
 </p>
+
+@using (Html.BeginForm("Index", "Queries", FormMethod.Get))
+{
+    <input type="text" name="searchString" />
+    <button type="submit">Search</button>
+}
+
 <table class="table">
     <tr>
         <th style="width: 175px;">

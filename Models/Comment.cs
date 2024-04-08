@@ -21,6 +21,11 @@ namespace EF6_QueryTaker.Models
         [Column("desc")]
         public virtual string Description { get; set; }
 
+        [Column("user_from_id")]
+        [ForeignKey(nameof(User))]
+        public virtual string UserFromId { get; set; }
+        public virtual ApplicationUser User { get; set; }
+
         [Column("type_id")]
         [ForeignKey(nameof(CommentType))]
         public virtual long TypeId { get; set; }

@@ -26,10 +26,15 @@ namespace EF6_QueryTaker.Models
 
         [Column("status_id")]
         [ForeignKey(nameof(QueryStatus))]
-        public virtual long StatusId { get; set; }
+        public virtual long? StatusId { get; set; }
         public virtual QueryStatus QueryStatus { get; set; }
 
-        [Column("user_id")]
+        [Column("category_id")]
+        [ForeignKey(nameof(QueryCategory))]
+        public virtual long? CategoryId { get; set; }
+        public virtual QueryCategory QueryCategory { get; set; }
+
+        [Column("customer_id")]
         [ForeignKey(nameof(Customer))]
         public virtual string CustomerId { get; set; }
         public virtual ApplicationUser Customer { get; set; }
