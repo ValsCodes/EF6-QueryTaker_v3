@@ -5,79 +5,173 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Details</h2>
+
+
+<style>
+    .container {
+        width: 400px;
+    }
+
+    .addtxt {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        text-align: center;
+        font-size: 13px;
+        width: 350px;
+        background-color: #e5e8ed;
+        font-weight: 500;
+    }
+
+    .form-control: focus {
+        color: #000;
+    }
+
+    .second {
+        width: 350px;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 10px 10px 5px #aaaaaa;
+    }
+
+    .text1 {
+        font-size: 13px;
+        font-weight: 500;
+        color: #56575b;
+    }
+
+    .text2 {
+        font-size: 13px;
+        font-weight: 500;
+        margin-left: 6px;
+        color: #56575b;
+    }
+
+    .text3 {
+        font-size: 13px;
+        font-weight: 500;
+        margin-right: 4px;
+        color: #828386;
+    }
+
+    .text3o {
+        color: #00a5f4;
+    }
+
+    .text4 {
+        font-size: 13px;
+        font-weight: 500;
+        color: #828386;
+    }
+
+    .text4i {
+        color: #00a5f4;
+    }
+
+    .text4o {
+        color: white;
+    }
+
+    .thumbup {
+        font-size: 13px;
+        font-weight: 500;
+        margin-right: 5px;
+    }
+
+    .thumbupo {
+        color: #17a2b8;
+    }
+
+    .ticket-details {
+        padding: 15px;
+        width: 40vh;
+    }
+    .cust-details {
+        padding: 20px;
+        vertical-align:top;
+    }
+    .ticket-desc {
+        vertical-align: top;
+        padding: 15px;
+    }
+</style>
+
+<h2>Ticket Details</h2>
+<hr />
 
 <div>
-    <h4>Query</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            Engineer Email
-        </dt>
+    <table>
+        <tr>
+            <th class="ticket-details">
+                <b>Engineer :</b>
+                @if (string.IsNullOrEmpty(Html.DisplayFor(model => model.Engineer.Email).ToString()))
+                {
+                    <label>Not Assigned</label>
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.Engineer.Email)
+                }
+                <br>
 
-        <dd>
-            @if (string.IsNullOrEmpty(Html.DisplayFor(model => model.Engineer.Email).ToString()))
-            {
-                <label>Not Assigned</label>
-            }
-            else
-            {
-                @Html.DisplayFor(model => model.Engineer.Email)
-            }
+                <b>Status :</b>
+                @Html.DisplayFor(model => model.QueryStatus.Name)
+                <br>
+                <b>Category :</b>
+                @Html.DisplayFor(model => model.QueryCategory.Name)
+                <br>
+                <b>Date Added :</b>
+                @Html.DisplayFor(model => model.DateAdded)
 
-        </dd>
+                <br>
+                <b> Last Update :</b>
+                @Html.DisplayFor(model => model.DateUpdated)
+            </th>
+            <th class="cust-details">
+                <center>Customer Info</center>
+                @Html.DisplayFor(model => model.Customer.Email)
+                <br>
+                @Html.DisplayFor(model => model.Customer.PhoneNumber)
+            </th>
+        </tr>
+        <tr>
+            <th class="ticket-desc">
+                <b>Subject:</b>
+                @Html.DisplayFor(model => model.Subject)
+                <br>
+                <b>Description:</b><br>
+                @Html.DisplayFor(model => model.Description)
+            </th>
+        </tr>
 
-        <dt>
-            Status
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.QueryStatus.Name)
-        </dd>
-
-        <dt>
-            Customer Email
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Customer.Email)
-        </dd>
-
-        <dt>
-           Subject
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Subject)
-        </dd>
-
-        <dt>
-            Description
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-
-        <dt>
-            Date Added
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.DateAdded)
-        </dd>
-
-        <dt>
-            Last Update
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.DateUpdated)
-        </dd>
-
-    </dl>
+    </table>
 </div>
 
+<div class="container justify-content-lg-start mt-5 border-left border-left">
+    <div class="d-flex justify-content-lg-start pt-3 pb-2"> <input type="text" name="text" placeholder="+ Add a Comment" class="form-control addtxt"> </div>
+    @foreach (var item in Model.QueryComments)
+    {
+        <div class="d-flex justify-content-lg-start py-3">
+            <div class="second py-2 px-3">
+                <span class="text1"> @Html.DisplayFor(modelItem => item.Comment.Description) </span>
+                <div class="d-flex  justify-content-lg-start py-3 pt-3">
+                    <div><img src="https://i.imgur.com/AgAC1Is.jpg" width="18"><span class="text2">@Html.DisplayFor(modelItem => item.Comment.UserFromId) @Html.DisplayFor(modelItem => item.Comment.DateAdded)</span></div>
+                    <div><span class="text3">Upvote?</span><span class="thumbup"><i class="fa fa-thumbs-o-up"></i></span><span class="text4">3</span></div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @*Test Comment *@
+    <div class="d-flex justify-content-lg-start py-3">
+        <div class="second py-2 px-3">
+            <span class="text1">Kotkata izbqga</span>
+            <div class="d-flex  justify-content-lg-start py-3 pt-3">
+                <div><img src="https://i.imgur.com/AgAC1Is.jpg" width="18"><span class="text2"> Ivan Peev 12.5.23213</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
 <div class="form-actions no-color">
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }, new { @class = "btn btn-success" })
     |

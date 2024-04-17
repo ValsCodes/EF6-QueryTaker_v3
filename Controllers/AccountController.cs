@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -157,7 +154,7 @@ namespace EF6_QueryTaker.Controllers
 
                 if (result.Succeeded)
                 {
-                    var roleResult = await UserManager.AddToRoleAsync(user.Id, RolesEnum.User.GetString());
+                    var roleResult = await UserManager.AddToRoleAsync(user.Id, RolesEnum.Customer.GetString());
                     if (roleResult.Succeeded)
                     {
                         await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);

@@ -3,10 +3,11 @@ namespace EF6_QueryTaker.Models.Enums
 {
     public class RolesEnum
     {
+        //Improve Roles
         public static readonly RolesEnum Admin = new RolesEnum(1, "Administrator");
         public static readonly RolesEnum Engineer = new RolesEnum(2, "Engineer");
         public static readonly RolesEnum Operator = new RolesEnum(3, "Operator");
-        public static readonly RolesEnum User = new RolesEnum(4, "User");
+        public static readonly RolesEnum Customer = new RolesEnum(4, "User");
 
         private RolesEnum(long value, string name)
         {

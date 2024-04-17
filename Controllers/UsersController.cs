@@ -1,6 +1,5 @@
 ﻿using EF6_QueryTaker.Models;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.Identity;
 using System.Web.Mvc;
 using System.Data.Entity;
 using EF6_QueryTaker.Models.Proxies;
@@ -8,12 +7,12 @@ using System.Linq;
 using EF6_QueryTaker.Models.Enums;
 using System.Net;
 using System.Threading.Tasks;
+using EF6_QueryTaker.Context;
 
 namespace EF6_QueryTaker.Controllers
 {
     public class UsersController : Controller
     {
-
         private readonly ApplicationDbContext _dbContext;
         private readonly ApplicationUserManager _userManager;
 
@@ -26,7 +25,7 @@ namespace EF6_QueryTaker.Controllers
             }
         }
 
-        // GET: User
+        // GET User
         public async Task<ActionResult> Index()
         {
             var users = await _userManager.Users.ToListAsync();
@@ -38,25 +37,25 @@ namespace EF6_QueryTaker.Controllers
                 Email = user.Email,
                 IsAdmin = user.Roles.Any(r => r.RoleId == RolesEnum.Admin.GetEnum().ToString()),
                 IsEngineer = user.Roles.Any(r => r.RoleId == RolesEnum.Engineer.GetEnum().ToString()),
-                IsUser = user.Roles.Any(r => r.RoleId == RolesEnum.User.GetEnum().ToString())
+                IsUser = user.Roles.Any(r => r.RoleId == RolesEnum.Customer.GetEnum().ToString())
             }).ToList();
 
             return View(temp);
         }
 
-        // GET: User/Details/5
+        // GET Details
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: User/Create
+        // GET Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: User/Create
+        // POST Create
         [HttpPost]
         public ActionResult Create(FormCollection collection)
         {
@@ -72,7 +71,7 @@ namespace EF6_QueryTaker.Controllers
             }
         }
 
-        // GET: User/Edit/5
+        // GET Edit
         public async Task<ActionResult> Edit(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -94,13 +93,13 @@ namespace EF6_QueryTaker.Controllers
                 Email = user.Email,
                 IsAdmin = user.Roles.Any(r => r.RoleId == RolesEnum.Admin.GetEnum().ToString()),
                 IsEngineer = user.Roles.Any(r => r.RoleId == RolesEnum.Engineer.GetEnum().ToString()),
-                IsUser = user.Roles.Any(r => r.RoleId == RolesEnum.User.GetEnum().ToString())
+                IsUser = user.Roles.Any(r => r.RoleId == RolesEnum.Customer.GetEnum().ToString())
             };
 
             return View(temp);
         }
 
-        // POST: User/Edit/5
+        // POST Edit
         [HttpPost]
         public ActionResult Edit(int id, FormCollection collection)
         {
@@ -116,13 +115,13 @@ namespace EF6_QueryTaker.Controllers
             }
         }
 
-        // GET: User/Delete/5
+        // GET Delete
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: User/Delete/5
+        // POST Delete
         [HttpPost]
         public ActionResult Delete(int id, FormCollection collection)
         {

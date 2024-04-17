@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using EF6_QueryTaker.Common;
+using EF6_QueryTaker.Context;
 using EF6_QueryTaker.Models;
 using EF6_QueryTaker.Models.Common;
 using EF6_QueryTaker.Models.Enums;
@@ -40,7 +41,7 @@ namespace EF6_QueryTaker.Controllers
         private bool IsInRoleEngineer => User.IsInRole(RolesEnum.Engineer.GetString());
         private bool IsInRoleAdmin => User.IsInRole(RolesEnum.Admin.GetString());
         private bool IsInRoleOperator => User.IsInRole(RolesEnum.Operator.GetString());
-        private bool IsInRoleUser => User.IsInRole(RolesEnum.User.GetString());
+        private bool IsInRoleUser => User.IsInRole(RolesEnum.Customer.GetString());
 
         private ApplicationUser CurrentUser
         {
@@ -55,7 +56,7 @@ namespace EF6_QueryTaker.Controllers
         {
             get
             {
-                var role = RolesEnum.User.GetEnum().ToString();
+                var role = RolesEnum.Customer.GetEnum().ToString();
                 var users = _userManager.Users.Where(x => x.Roles.Any(r => r.RoleId == role));
                 return users;
             }
@@ -78,7 +79,7 @@ namespace EF6_QueryTaker.Controllers
             var users = await _userManager.Users.ToListAsync();
 
             var engineerRoleId = RolesEnum.Engineer.GetEnum().ToString();
-            var customerRoleId = RolesEnum.User.GetEnum().ToString();
+            var customerRoleId = RolesEnum.Customer.GetEnum().ToString();
 
             var engineers = users.Where(x => x.Roles.Any(r => r.RoleId == engineerRoleId)).AsEnumerable().Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
             var customers = users.Where(x => x.Roles.Any(r => r.RoleId == customerRoleId)).AsEnumerable().Select(x => new CommonProxy<string> { Name = x.UserName, Id = x.Id });
@@ -91,7 +92,7 @@ namespace EF6_QueryTaker.Controllers
         }
         #endregion
 
-        // GET: Queries
+        // GET Queries
         [Authorize]
         public async Task<ActionResult> Index()
         {
@@ -116,7 +117,7 @@ namespace EF6_QueryTaker.Controllers
 
             if (IsInRoleEngineer)
             {
-                var queryable = queries.Where(x => x.EngineerId == CurrentUser.Id).ToList();
+                var queryable = queries.Where(x => x.EngineerId == CurrentUser.Id || x.EngineerId == null).ToList();
                 return View(queryable);
             }
 
@@ -157,7 +158,7 @@ namespace EF6_QueryTaker.Controllers
             return View(query);
         }
 
-        // GET: Queries/Create
+        // GET Create
         public async Task<ActionResult> Create()
         {
             if (IsInRoleAdmin)
@@ -176,7 +177,7 @@ namespace EF6_QueryTaker.Controllers
             return View();
         }
 
-        // POST: Queries/Create
+        // POST Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(Query query)
@@ -188,6 +189,12 @@ namespace EF6_QueryTaker.Controllers
 
             if (ModelState.IsValid)
             {
+                if(IsInRoleUser)
+                {
+                    query.CustomerId = CurrentUser.Id;
+                    query.StatusId = (long)StatusEnums.ToBeProcessed;
+                }
+
                 if (IsInRoleAdmin)
                 {
                     query.CustomerId = query.CustomerId;
@@ -205,7 +212,7 @@ namespace EF6_QueryTaker.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: Queries/Edit/5
+        // GET Edit
         public async Task<ActionResult> Edit(long? id)
         {
             if (id == null)
@@ -230,24 +237,13 @@ namespace EF6_QueryTaker.Controllers
                 var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
                 ViewBag.Statuses = new SelectList(statuses, "Id", "Name", query.StatusId);
                 ViewBag.Customers = new SelectList(Customers, "Id", "Name", query.CustomerId);
-
-                if (!IsInRoleAdmin)
-                {
-                    return View(query);
-                }
-
-                ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
+                ViewBag.Engineers = new SelectList(Engineers, "Id", "Name", query.EngineerId);
             }
 
             return View(query);
         }
 
-        // POST: Queries/Edit/5
-        /// <summary>
-        /// query doesn't return selected values from dropdowns, UI problem probably
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
+        // POST Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,CustomerId,EngineerId")] Query query)
@@ -259,17 +255,12 @@ namespace EF6_QueryTaker.Controllers
                 return HttpNotFound();
             }
 
-            if (IsInRoleEngineer)
-            {
-                temp.StatusId = query.StatusId;
-            }
-
-            if (IsInRoleAdmin)
+            if (IsInRoleAdmin || IsInRoleEngineer)
             {
                 temp.StatusId = query.StatusId;
                 temp.EngineerId = query.EngineerId;
 
-                if (query.CustomerId != null)
+                if (query.CustomerId != null && temp.CustomerId != query.CustomerId)
                 {
                     temp.CustomerId = query.CustomerId;
                 }
@@ -285,7 +276,7 @@ namespace EF6_QueryTaker.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: Queries/Delete/5
+        // GET Delete
         public async Task<ActionResult> Delete(long? id)
         {
             if (id == null)
@@ -303,7 +294,7 @@ namespace EF6_QueryTaker.Controllers
             return View(query);
         }
 
-        // POST: Queries/Delete/5
+        // POST Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async  Task<ActionResult> DeleteConfirmed(long id)
