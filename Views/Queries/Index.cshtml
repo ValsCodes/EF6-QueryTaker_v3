@@ -26,6 +26,9 @@
             Status
         </th>
         <th>
+            Category
+        </th>
+        <th>
             Customer
         </th>
         <th>
@@ -51,6 +54,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.QueryStatus.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.QueryCategory.Name)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Customer.UserName)

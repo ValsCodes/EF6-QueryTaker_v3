@@ -168,9 +168,9 @@ namespace EF6_QueryTaker.Controllers
                     await FillUserCollections();
                 }
 
-                var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
+                ViewBag.Statuses = new SelectList(StaticCollections.QueryStatuses(), "Id", "Name");
+                ViewBag.Categories = new SelectList(StaticCollections.QueryCatgories(), "Id", "Name");
                 ViewBag.Engineers = new SelectList(Engineers, "Id", "Name");
-                ViewBag.Statuses = new SelectList(statuses, "Id", "Name");
                 ViewBag.Customers = new SelectList(Customers, "Id", "Name");
             }
 
@@ -213,6 +213,7 @@ namespace EF6_QueryTaker.Controllers
         }
 
         // GET Edit
+        // When User is no longer in the role he was, his name is not displayed in the selected user(Customer/Engineer)
         public async Task<ActionResult> Edit(long? id)
         {
             if (id == null)
@@ -234,8 +235,8 @@ namespace EF6_QueryTaker.Controllers
                     await FillUserCollections();
                 }
 
-                var statuses = new ObservableCollection<CommonProxy<long>>(StaticCollections.QueryStatuses());
-                ViewBag.Statuses = new SelectList(statuses, "Id", "Name", query.StatusId);
+                ViewBag.Statuses = new SelectList(StaticCollections.QueryStatuses(), "Id", "Name", query.StatusId);
+                ViewBag.Categories = new SelectList(StaticCollections.QueryCatgories(), "Id", "Name", query.CategoryId);
                 ViewBag.Customers = new SelectList(Customers, "Id", "Name", query.CustomerId);
                 ViewBag.Engineers = new SelectList(Engineers, "Id", "Name", query.EngineerId);
             }
@@ -246,7 +247,7 @@ namespace EF6_QueryTaker.Controllers
         // POST Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,Subject,Description,DateAdded,DateUpdated,StatusId,CustomerId,EngineerId")] Query query)
+        public async Task<ActionResult> Edit(Query query)
         {
             var temp = await _dbContext.Queries.FindAsync(query.Id);
 
@@ -266,6 +267,7 @@ namespace EF6_QueryTaker.Controllers
                 }
             }
 
+            temp.CategoryId = query.CategoryId;
             temp.Description = query.Description;
             temp.Subject = query.Subject;
             temp.DateUpdated = DateTime.Now;

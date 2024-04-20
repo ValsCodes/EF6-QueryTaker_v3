@@ -13,63 +13,70 @@
 {
     @Html.AntiForgeryToken()
 
-    <div class="form-horizontal">
-        <hr />
-        @*    @if (User.IsInRole(RolesEnum.Admin.GetString()) || User.IsInRole(RolesEnum.Engineer.GetString()))
-            {
-                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-                @Html.DisplayFor(model => model.Id);
-            }*@
-
-        <div class="form-group">
-            <label>Subject</label>
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Subject, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Subject, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Description</label>
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        @if (User.IsInRole(RolesEnum.Admin.GetString()) || User.IsInRole(RolesEnum.Engineer.GetString()))
+<div class="form-horizontal">
+    @*    @if (User.IsInRole(RolesEnum.Admin.GetString()) || User.IsInRole(RolesEnum.Engineer.GetString()))
         {
-            <div class="form-group">
-                <label>Status</label>
-                <div class="col-md-10">
-                    @Html.DropDownList("StatusId", (SelectList)ViewBag.Statuses, htmlAttributes: new { @class = "form-control" })
-                    @Html.ValidationMessageFor(model => model.StatusId, "", new { @class = "text-danger" })
-                </div>
-            </div>
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.DisplayFor(model => model.Id);
+        }*@
 
-            <div class="form-group">
-                <label>Customer</label>
-                <div class="col-md-10">
-                    @Html.DropDownList("CustomerId", (SelectList)ViewBag.Customers, htmlAttributes: new { @class = "form-control"})
-                    @Html.ValidationMessageFor(model => model.CustomerId, "", new { @class = "text-danger" })
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Assigned Engineer</label>
-                <div class="col-md-10">
-                    @Html.DropDownList("EngineerId", (SelectList)ViewBag.Engineers, htmlAttributes: new{@class = "form-control"})
-                    @Html.ValidationMessageFor(model => model.EngineerId, "", new { @class = "text-danger" })
-                </div>
-            </div>
-        }
-        <br>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-success" /> |
-                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
-            </div>
+    <div class="form-group">
+        <label>Subject</label>
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Subject, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Subject, "", new { @class = "text-danger" })
         </div>
     </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Category</label>
+        <div class="col-md-10">
+            @Html.DropDownList("CategoryId", (SelectList)ViewBag.Categories, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.CategoryId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    @if (User.IsInRole(RolesEnum.Admin.GetString()) || User.IsInRole(RolesEnum.Engineer.GetString()))
+    {
+        <div class="form-group">
+            <label>Status</label>
+            <div class="col-md-10">
+                @Html.DropDownList("StatusId", (SelectList)ViewBag.Statuses, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.StatusId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Customer</label>
+            <div class="col-md-10">
+                @Html.DropDownList("CustomerId", (SelectList)ViewBag.Customers, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.CustomerId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Assigned Engineer</label>
+            <div class="col-md-10">
+                @Html.DropDownList("EngineerId", (SelectList)ViewBag.Engineers, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.EngineerId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    }
+    <br>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save" class="btn btn-success" /> |
+            @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+        </div>
+    </div>
+</div>
 }
 
 @section Scripts {
