@@ -18,8 +18,7 @@ This application manages incoming user requests (tickets) and streamlines their 
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/ValsCodes/Steam-App-Angular-Server
-   cd steam-app
+   git clone https://github.com/ValsCodes/EF6-QueryTaker_v3
    ```
 
 2. **Restore & Build**:
