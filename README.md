@@ -1,5 +1,5 @@
 
-# Entity Framework Query Tracker Support Site
+# Entity Framework Role based Support Website Platform
 
 This application manages incoming user requests (tickets) and streamlines their resolution. It leverages **MS Identity** for secure, role-based access, ensuring different user roles have proper permissions when viewing and handling tickets.
 
